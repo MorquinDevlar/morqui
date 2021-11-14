@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE MudletPackage>
+<MudletPackage version="1.001">
+	<AliasPackage>
+		<AliasGroup isActive="yes" isFolder="yes">
+			<name>Morqui</name>
+			<script></script>
+			<command></command>
+			<packageName></packageName>
+			<regex></regex>
+			<AliasGroup isActive="yes" isFolder="yes">
+				<name>Notes and information</name>
+				<script></script>
+				<command></command>
+				<packageName></packageName>
+				<regex></regex>
+				<Alias isActive="yes" isFolder="no">
+					<name>Save a personal note in a room</name>
+					<script>morqui.saveRoomNotes(matches[2])</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^savenote (.*)$</regex>
+				</Alias>
+			</AliasGroup>
+			<AliasGroup isActive="yes" isFolder="yes">
+				<name>Quests</name>
+				<script></script>
+				<command></command>
+				<packageName></packageName>
+				<regex></regex>
+				<Alias isActive="yes" isFolder="no">
+					<name>Start Quest Capture</name>
+					<script>send("quest", false)
+morqui.questCaptureTarget = true
+morqui.questCaptureAmmount = true</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^quest$</regex>
+				</Alias>
+				<Alias isActive="yes" isFolder="no">
+					<name>Capture Offer Command</name>
+					<script>send("offer", false)
+
+morqui.questCaptureOffer = true</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^offer$</regex>
+				</Alias>
+				<Alias isActive="yes" isFolder="no">
+					<name>Show Quests In Area</name>
+					<script>showQuestInArea()</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^showq$</regex>
+				</Alias>
+				<Alias isActive="yes" isFolder="no">
+					<name>Show Quests In Area</name>
+					<script>showQuestItems()</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^showqi$</regex>
+				</Alias>
+			</AliasGroup>
+			<AliasGroup isActive="yes" isFolder="yes">
+				<name>Inventory</name>
+				<script></script>
+				<command></command>
+				<packageName></packageName>
+				<regex></regex>
+				<Alias isActive="yes" isFolder="no">
+					<name>Show Custom Inventory</name>
+					<script>morqui.customInventory = true
+send("inv", false)</script>
+					<command></command>
+					<packageName></packageName>
+					<regex>^inv$</regex>
+				</Alias>
+			</AliasGroup>
+		</AliasGroup>
+	</AliasPackage>
+</MudletPackage>

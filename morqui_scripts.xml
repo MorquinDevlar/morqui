@@ -1,0 +1,926 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE MudletPackage>
+<MudletPackage version="1.001">
+	<ScriptPackage>
+		<ScriptGroup isActive="yes" isFolder="yes">
+			<name>MorqUI</name>
+			<packageName></packageName>
+			<script></script>
+			<eventHandlerList />
+			<Script isActive="yes" isFolder="no">
+				<name>Do things at first login</name>
+				<packageName></packageName>
+				<script>morqui = morqui or {}
+
+function morqui.connected()
+
+  cecho("\n&lt;dodger_blue&gt;Connected          &lt;white&gt;: &lt;gold&gt;Initializing...")
+
+  morqui.questTable = morqui.questTable or {}
+  morqui.roomNotesTable = morqui.roomNotesTable or {}
+  
+  if io.exists(getMudletHomeDir().."/morqui.roomNotesTable.lua") then
+    table.load(getMudletHomeDir().."/morqui.roomNotesTable.lua", morqui.roomNotesTable) -- using / is OK on Windows too.
+    cecho("\n&lt;dodger_blue&gt;Loading tables     &lt;white&gt;: &lt;gold&gt;Notes loaded...")
+  end
+  
+  if io.exists(getMudletHomeDir().."/morqui.questTable.lua") then
+    table.load(getMudletHomeDir().."/morqui.questTable.lua", morqui.questTable) -- using / is OK on Windows too.
+    cecho("\n&lt;dodger_blue&gt;Loading tables     &lt;white&gt;: &lt;gold&gt;Quest Information loaded...")
+  end
+
+  
+  -- Set the environment variables and load the tools we need
+  
+  EMCO = require("emco")
+  fText = require("ftext")
+  TableMaker = require("ftext").TableMaker
+  DemonTools = require("demontools")
+  TextGauge = require("textgauge")
+
+  -- Start building the UI
+  
+  --setMainWindowSize(1680, 830)
+
+  morqui.bracketcolor = "&lt;white&gt;"
+  morqui.highlightcolor = "&lt;dodger_blue&gt;"
+  morqui.linkcolor = "&lt;gold&gt;"
+
+  morqui.consoleFontSize = 12
+  morqui.consoleFontFace = "Ubuntu Mono"
+  
+  
+  fontWidth, fontHeight = calcFontSize(morqui.consoleFontSize)
+  mainWidth, mainHeight = getMainWindowSize()  
+    
+  -- Start building the gui
+  morqui.createGUI()
+
+end
+
+registerAnonymousEventHandler("sysConnectionEvent", "morqui.connected")</script>
+				<eventHandlerList />
+			</Script>
+			<ScriptGroup isActive="yes" isFolder="yes">
+				<name>GMCP Handling</name>
+				<packageName></packageName>
+				<script></script>
+				<eventHandlerList />
+				<Script isActive="yes" isFolder="no">
+					<name>morqui.initiateGMCPValues</name>
+					<packageName></packageName>
+					<script>function morqui.initiateGMCPValues(_, protocol)
+  cecho("\n&lt;dodger_blue&gt;Protocol enabled&lt;white&gt;    : &lt;gold&gt;"..protocol)
+  
+  if protocol == "GMCP" then 
+  
+    -- Define initial table space
+    morqui.gmcp = morqui.gmcp or {}
+    morqui.gmcp.room = morqui.gmcp.room or {}
+  
+  end
+  
+end
+
+registerAnonymousEventHandler("sysProtocolEnabled", "morqui.initiateGMCPValues")</script>
+					<eventHandlerList />
+				</Script>
+			</ScriptGroup>
+			<ScriptGroup isActive="yes" isFolder="yes">
+				<name>GUI Elements</name>
+				<packageName></packageName>
+				<script></script>
+				<eventHandlerList />
+				<Script isActive="yes" isFolder="no">
+					<name>morqui.createGUI</name>
+					<packageName></packageName>
+					<script>function morqui.createGUI()
+  cecho("\n&lt;dodger_blue&gt;GUI                &lt;white&gt;: &lt;gold&gt;Now building the UI elements...\n\n")
+
+  -- Make the adjustable consoles
+  morqui.buildConsoles("bottom")
+  morqui.buildConsoles("left")
+  morqui.buildConsoles("right")
+  
+  -- Define the correct borders
+  setBorderSizes(0, rightWidth, bottomHeight, leftWidth+5)
+  
+  morqui.bottom:attachToBorder("bottom")
+  morqui.left:attachToBorder("left")
+  morqui.right:attachToBorder("right")
+  
+  morqui.bottom:connectToBorder("left")
+  morqui.bottom:connectToBorder("right")
+
+  -- Set the stylesheet for the tabbed consoles
+  tabStylesheet = [[background-color: grey; border-width: 1px; border-style: solid; border-color: gold;]]
+  tabIStylesheet = [[background-color: black; border-width: 1px; border-style: solid; border-color: gold;]]
+
+   
+  -- Creat the miniconsoles
+  morqui.charConsoleInit()
+  morqui.roomConsoleInit()
+  morqui.channelConsoleInit()
+  morqui.mapConsoleInit()  
+  morqui.promtConsoleInit()
+
+  -- Lock all the containers to limit space usage
+  morqui.bottom:lockContainer()
+  morqui.right:lockContainer()
+  morqui.left:lockContainer()
+
+  setMapZoom(16)
+
+end</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>morqui.charConsole</name>
+					<packageName></packageName>
+					<script>-- Create the character window
+function morqui.charConsoleInit()
+  charwindowEMCO = EMCO:new({
+    name="morqui.charConsole",
+    x="0",
+    y="0",
+    height="30c",
+    width="100%",
+    autoWrap = true,
+    scrollBar = false,
+    gap = 5,
+    consoleColor = "&lt;32,32,32&gt;",
+    activeTabFGColor = "white",
+    fontSize = morqui.consoleFontSize,
+    tabFontSize = morqui.consoleFontSize,
+      consoles = {
+        "Char",
+        "Group",
+      },
+    activeTabCSS = tabStylesheet,
+    inactiveTabCSS = tabIStylesheet,
+  }, morqui.left)
+end
+
+function morqui.showPlayerInfo()
+  
+  -- If gmcp is not yet ready to show the values, lets not show them
+  if gmcp.Char.Base == nil then return end
+  if gmcp.Char.Worth == nil then return end
+  if gmcp.Char.Stats == nil then return end
+  if gmcp.World.Info == nil then return end
+    
+  charwindowEMCO:clear("Char") -- Clear the window, and prepare to write new values
+  
+  charwindowEMCO:cecho("Char","\n")
+  charwindowEMCO:cecho("Char",fText.fText("World Information", {width = leftWidth/fontWidth, alignment = "center", formatType = "c", textColor = "&lt;orange&gt;", capColor = "&lt;dodger_blue&gt;", cap = "[", spacer = "-", inside = false, mirror = true}))
+  charwindowEMCO:cecho("Char","\n")
+  charwindowEMCO:cecho("Char"," &lt;dodger_blue&gt;Year&lt;white&gt; "..gmcp.World.Info.year.." &lt;dodger_blue&gt;Mon&lt;white&gt; "..gmcp.World.Info.mon.." &lt;dodger_blue&gt;Day&lt;white&gt; "..gmcp.World.Info.day.." &lt;dodger_blue&gt;Hr&lt;gold&gt; "..gmcp.World.Info.hour)
+  charwindowEMCO:cecho("Char","\n")
+  charwindowEMCO:cecho("Char"," &lt;dodger_blue&gt;Month&lt;white&gt;:&lt;gold&gt; "..gmcp.World.Info.month)
+  charwindowEMCO:cecho("Char","\n")
+  charwindowEMCO:cecho("Char","\n")
+  charwindowEMCO:cecho("Char",fText.fText("Character Information for &lt;white&gt;"..gmcp.Char.Base.name, {width = leftWidth/fontWidth, alignment = "center", formatType = "c", textColor = "&lt;cyan&gt;", capColor = "&lt;dodger_blue&gt;", cap = "[", spacer = "-", inside = false, mirror = true}))
+  charwindowEMCO:cecho("Char","\n")
+  charwindowEMCO:cecho("Char","&lt;dodger_blue&gt; Race&lt;white&gt;: "..gmcp.Char.Base.race)
+  charwindowEMCO:cecho("Char","&lt;dodger_blue&gt; Level&lt;white&gt;: &lt;gold&gt;"..gmcp.Char.Worth.level)
+  charwindowEMCO:cecho("Char","\n")
+  charwindowEMCO:cecho("Char","&lt;dodger_blue&gt; XP&lt;white&gt;: "..addNumberSeperator(gmcp.Char.Worth.xp).." ("..string.gsub(round(gmcp.Char.Worth.xp/gmcp.Char.Worth.tnl*100,3),"%.",",").."&lt;gold&gt;%)".." &lt;gold&gt; &lt;dodger_blue&gt;Tnl&lt;white&gt;: "..addNumberSeperator(gmcp.Char.Worth.tnl))
+  charwindowEMCO:cecho("Char","\n")
+  charwindowEMCO:cecho("Char","&lt;dodger_blue&gt; Gold&lt;white&gt;: &lt;gold&gt;"..addNumberSeperator(gmcp.Char.Worth.gold))
+  charwindowEMCO:cecho("Char","\n")
+  charwindowEMCO:cecho("Char","\n")
+  charwindowEMCO:cecho("Char",fText.fText("Stats", {width = leftWidth/fontWidth, alignment = "center", formatType = "c", textColor = "&lt;green&gt;", capColor = "&lt;dodger_blue&gt;", cap = "[", spacer = "-", inside = false, mirror = true}))
+  charwindowEMCO:cecho("Char","\n")
+  charwindowEMCO:cecho("Char","&lt;dodger_blue&gt; STR AGI VIT SPD INT SPR &lt;gold&gt;ARM")
+  charwindowEMCO:cecho("Char","\n")
+  charwindowEMCO:cecho("Char","&lt;white&gt;  "..padAndTruncate(gmcp.Char.Stats.str).."  "..padAndTruncate(gmcp.Char.Stats.agi).."  "..padAndTruncate(gmcp.Char.Stats.vit).."  "..padAndTruncate(gmcp.Char.Stats.spd).."  "..padAndTruncate(gmcp.Char.Stats.int).."  "..padAndTruncate(gmcp.Char.Stats.spr).."  &lt;gold&gt;"..padAndTruncate(gmcp.Char.Stats.arm))
+  charwindowEMCO:cecho("Char","\n")
+  charwindowEMCO:cecho("Char","\n")
+  charwindowEMCO:cecho("Char","&lt;dodger_blue&gt;      Crit&lt;white&gt;: &lt;red&gt;"..padAndTruncate(gmcp.Char.Stats.crit))
+  charwindowEMCO:cecho("Char","  &lt;dodger_blue&gt;       Acc&lt;white&gt;: &lt;green&gt;"..padAndTruncate(gmcp.Char.Stats.acc))
+  charwindowEMCO:cecho("Char","\n")
+  charwindowEMCO:cecho("Char","&lt;dodger_blue&gt; Magic Arm&lt;white&gt;: &lt;cyan&gt;"..padAndTruncate(gmcp.Char.Stats.marm))
+  charwindowEMCO:cecho("Char","  &lt;dodger_blue&gt; Magic Eva&lt;white&gt;: &lt;cyan&gt;"..padAndTruncate(gmcp.Char.Stats.meva))
+  charwindowEMCO:cecho("Char","\n")
+end
+
+registerAnonymousEventHandler("gmcp.Char.Base","morqui.showPlayerInfo")
+registerAnonymousEventHandler("gmcp.Char.Worth","morqui.showPlayerInfo")
+registerAnonymousEventHandler("gmcp.Char.Stats","morqui.showPlayerInfo")
+registerAnonymousEventHandler("gmcp.World.Info","morqui.showPlayerInfo")</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>morqui.roomConsole</name>
+					<packageName></packageName>
+					<script>-- Create the opponent information window
+function morqui.roomConsoleInit()
+  morqui.roomConsole = Geyser.MiniConsole:new({
+      name="morqui.roomConsole",
+      adjLabelstyle = "background-color:rgba(0,0,0,100%); border: 3px groove DodgerBlue;",
+      x="0px",
+      y="-30c",
+      height="20c",
+      width="100%",
+      autoWrap = true,
+      color = "&lt;32,32,32&gt;",
+      scrollBar = false,
+      fontSize = morqui.consoleFontSize,
+      --autoLoad = false,
+    }, morqui.left)
+-- Create the opponent information window 
+
+end
+
+function morqui.showRoomInfo()
+  if gmcp.Room == nil then return end
+  if gmcp.Room.Info == nil then return end
+  if gmcp.World.Info == nil then return end
+    
+  morqui.roomConsole:clear()
+  charwindowEMCO:cecho("Char","\n")
+  cecho("morqui.roomConsole",fText.fText("Room Information &lt;gold&gt;# &lt;green&gt;"..gmcp.Room.Info.id, {width = leftWidth/fontWidth, alignment = "center", formatType = "c", textColor = "&lt;orange&gt;", capColor = "&lt;dodger_blue&gt;", cap = "[", spacer = "-", inside = false, mirror = true}))
+  cecho("morqui.roomConsole", "\n")
+  cecho("morqui.roomConsole", " &lt;dodger_blue&gt;Area&lt;white&gt; : ".. "&lt;gold&gt;"..string.title(string.gsub(gmcp.Room.Info.area, "_", " "))..string.rep(" ", 25-string.len(gmcp.Room.Info.area)).."&lt;dodger_blue&gt;Sector&lt;white&gt;: ".. "&lt;white&gt;"..gmcp.Room.Info.sector)
+   
+  cecho("morqui.roomConsole", "\n")
+  if string.len(gmcp.Room.Info.name) &gt; 50 then 
+    cecho("morqui.roomConsole", " &lt;dodger_blue&gt;Name&lt;white&gt; : ".. "&lt;gold&gt;"..string.cut(gmcp.Room.Info.name, 50).."...")
+    else
+    cecho("morqui.roomConsole", " &lt;dodger_blue&gt;Name&lt;white&gt; : ".. "&lt;grey&gt;"..gmcp.Room.Info.name)
+  end
+  
+  cecho("morqui.roomConsole", "\n")
+  
+  if gmcp.Room.Info.shop ~= "" then
+    cecho("morqui.roomConsole", " &lt;dodger_blue&gt;Shop&lt;white&gt; :")
+    cechoLink("morqui.roomConsole"," &lt;cyan&gt;"..gmcp.Room.Info.shop.."", [[send("list")]], "List shop contents", true)
+  --  setRoomEnv(getPlayerRoom(), 266) -- Color all shops green
+  --  setRoomChar(getPlayerRoom(), "$") -- Show a $ value in all shops
+    else
+    cecho("morqui.roomConsole", " &lt;dodger_blue&gt;Shop&lt;white&gt; : ".. "&lt;gold&gt;None")
+  end
+  
+  cecho("morqui.roomConsole", "\n")
+  
+  if gmcp.Room.Info.quest ~= 0 then 
+  --  setRoomEnv(getPlayerRoom(), 267) -- Allways color quest rooms yellow
+    cecho("morqui.roomConsole", " &lt;dodger_blue&gt;Quest&lt;white&gt;: ".. "&lt;green&gt;"..gmcp.Room.Info.quest)
+    cechoLink("morqui.roomConsole"," &lt;white&gt;"..gmcp.Room.Info.questname.."", [[send("journal read  "..gmcp.Room.Info.quest)]], "Read quest journal", true)
+    if morqui.questTable[gmcp.Room.Info.quest] then
+      if morqui.questTable[gmcp.Room.Info.quest].questStatus == "Done" then
+          cecho("morqui.roomConsole", " &lt;dodger_blue&gt;(&lt;gold&gt;Done&lt;dodger_blue&gt;)")
+        elseif morqui.questTable[gmcp.Room.Info.quest].questStatus == "In progress" then
+          cecho("morqui.roomConsole", " &lt;dodger_blue&gt;(&lt;gold&gt;In progress&lt;dodger_blue&gt;)")
+        elseif morqui.questTable[gmcp.Room.Info.quest].questStatus == "New" then
+          cecho("morqui.roomConsole", " &lt;dodger_blue&gt;(&lt;green&gt;New&lt;dodger_blue&gt;)")
+      end
+    else
+      cecho("morqui.roomConsole", " &lt;dodger_blue&gt;(&lt;green&gt;New&lt;dodger_blue&gt;)")
+    end
+  end
+  
+  cecho("morqui.roomConsole", "\n")
+    cecho("morqui.roomConsole", "\n")
+  
+    cecho("morqui.roomConsole", " &lt;dodger_blue&gt;Personal Notes&lt;white&gt;:")
+  
+  if morqui.roomNotesTable[gmcp.Room.Info.id] then
+    cecho("morqui.roomConsole", "\n")
+    cecho("morqui.roomConsole", " &lt;gold&gt;"..morqui.roomNotesTable[gmcp.Room.Info.id].notes)
+    else
+    cecho("morqui.roomConsole", "\n")
+    cecho("morqui.roomConsole", " &lt;grey&gt;Use 'savenote &lt;note text&gt;' to write a note")
+     
+  end
+  
+end
+
+registerAnonymousEventHandler("gmcp.Room.Info","morqui.showRoomInfo")
+registerAnonymousEventHandler("gmcp.World.Info","morqui.showRoomInfo")</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>morqui.promptConsole</name>
+					<packageName></packageName>
+					<script>-- Create the Combat Information window
+function morqui.promtConsoleInit()
+  morqui.promptConsole = Geyser.MiniConsole:new({
+      name="morqui.promptConsole",
+      x="0",
+      y="0",
+      height="100%",
+      width="100%",
+      autoWrap = true,
+      color = "black",
+      scrollBar = false,
+      fontSize = morqui.consoleFontSize,
+    }, morqui.bottom)
+    
+end
+
+function morqui.showPromptInfo()
+  
+  -- Define the balance text guage
+  balanceGauge = TextGauge:new(
+    {
+      fillCharacter = ":",
+      fillColor = "dodger_blue",
+      emptyCharacter = "-",
+      emptyColor = "gold",
+    }
+  )
+  
+  -- If gmcp is not yet ready to show the values, lets not show them
+  if gmcp.Char.Vitals == nil then return end
+  if gmcp.Char.Balance == nil then return end
+    
+  morqui.promptConsole:clear()
+  
+  cecho("morqui.promptConsole", "&lt;white&gt;------------------------------------------------------------------\n")
+  --cecho("morqui.promptConsole","\n")
+  --cecho("morqui.promptConsole","&lt;white&gt;[&lt;gold&gt;".."Heal".."&lt;white&gt;]")
+  --cecho("morqui.promptConsole","  &lt;white&gt;Combat XP gain: &lt;gold&gt;"..morqui.combatXPGain)
+  --cecho("morqui.promptConsole","\n")
+  cecho("morqui.promptConsole", "&lt;dodger_blue&gt;HP&lt;white&gt;[&lt;gold&gt;"..gmcp.Char.Vitals.hp.."&lt;white&gt;/&lt;gold&gt;"..gmcp.Char.Vitals.maxhp.."&lt;white&gt;]")
+  cecho("morqui.promptConsole", "&lt;dodger_blue&gt; MA&lt;white&gt;[&lt;cyan&gt;"..gmcp.Char.Vitals.mp.."&lt;white&gt;/&lt;cyan&gt;"..gmcp.Char.Vitals.maxmp.."&lt;white&gt;]")
+  if gmcp.Char.Balance.balance ~= 0 then 
+    cecho("morqui.promptConsole", "  &lt;magenta&gt;Balance&lt;white&gt;: &lt;gold&gt;["..balanceGauge:setValue(gmcp.Char.Balance.balance, gmcp.Char.Balance.maxbalance).."&lt;gold&gt;]")
+    else
+    cecho("morqui.promptConsole", "  &lt;magenta&gt;Balance&lt;white&gt;: &lt;gold&gt;[&lt;green&gt;Balanced&lt;gold&gt;]")
+  end
+  
+  
+  
+  if morqui.currentTarget then
+    cecho("morqui.promptConsole","\n")
+    cecho("morqui.promptConsole", "&lt;dodger_blue&gt;Current Target: &lt;white&gt;[&lt;gold&gt;"..morqui.currentTarget.."&lt;white&gt;]")
+  end
+  
+end
+
+registerAnonymousEventHandler("gmcp.Char.Vitals","morqui.showPromptInfo")
+registerAnonymousEventHandler("gmcp.Char.Balance","morqui.showPromptInfo")</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>morqui.comsConsole</name>
+					<packageName></packageName>
+					<script>function morqui.channelConsoleInit()
+  channelwindowEMCO = EMCO:new({
+    name = "ChannelConsole",
+    x = "0",
+    y = "0",
+    width = "100%",
+    height = "40%",
+    gap = 5,
+    consoleColor = "&lt;32,32,32&gt;",
+    activeTabFGColor = "white",
+    fontSize = 10,
+    tabFontSize = morqui.consoleFontSize,
+    --leftMargin = 10,
+    rightMargin = 10,
+    allTab = true,
+    allTabName = "All",
+    consoles = {
+      "All",
+      "Chat",
+      "Tells",
+      "Shout",
+      "Guild",
+      "Misc",
+      
+    },
+    --blink = false,
+    --blinkTime = 1,
+    activeTabCSS = tabStylesheet,
+    inactiveTabCSS = tabIStylesheet,
+  }, morqui.right)
+end
+
+function morqui.comsConsoleShowChannels()
+
+  if gmcp.Comm.Channel.channel == "chat" then
+    channelwindowEMCO:cecho("Chat", " &lt;gold&gt;"..getTime(true, "hh:mm ").."&lt;white&gt;"..ansi2string(gmcp.Comm.Channel.text).."\n\n")
+  end
+  
+  if gmcp.Comm.Channel.channel == "shout" then
+    channelwindowEMCO:cecho("Shout", " &lt;cyan&gt;"..getTime(true, "hh:mm ").."&lt;white&gt;"..ansi2string(gmcp.Comm.Channel.text).."\n\n")
+  end
+  
+  if gmcp.Comm.Channel.channel == "guild" then
+    channelwindowEMCO:cecho("Guild", " &lt;red&gt;"..getTime(true, "hh:mm ").."&lt;white&gt;"..ansi2string(gmcp.Comm.Channel.text).."\n\n")
+  end
+  
+  if gmcp.Comm.Channel.channel == "guild" then
+    channelwindowEMCO:cecho("Guild", " &lt;gold&gt;"..getTime(true, "hh:mm ").."&lt;white&gt;"..ansi2string(gmcp.Comm.Channel.text).."\n\n")
+  end
+  
+  if gmcp.Comm.Channel.channel == "logins" then
+    channelwindowEMCO:cecho("Misc", " &lt;green&gt;"..getTime(true, "hh:mm ").."&lt;white&gt;"..ansi2string(gmcp.Comm.Channel.text).."\n\n")
+  end
+  
+  if gmcp.Comm.Channel.channel == "achievements" then
+    channelwindowEMCO:cecho("Misc", " &lt;light_blue&gt;"..getTime(true, "hh:mm ").."&lt;white&gt;"..ansi2string(gmcp.Comm.Channel.text).."\n\n")
+  end
+  
+  if gmcp.Comm.Channel.channel == "newbie" then
+    channelwindowEMCO:cecho("Misc", " &lt;yellow&gt;"..getTime(true, "hh:mm ").."&lt;white&gt;"..ansi2string(gmcp.Comm.Channel.text).."\n\n")
+  end
+
+end
+
+registerAnonymousEventHandler("gmcp.Comm.Channel","morqui.comsConsoleShowChannels")
+
+
+</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>morqui.mapConsole</name>
+					<packageName></packageName>
+					<script>function morqui.mapConsoleInit()
+  mapwindowEMCO = EMCO:new({
+    name = "MapWindow",
+    x = "0",
+    y = "40%",
+    width = "100%",
+    height = "60%",
+    scrollBar = true,
+    gap = 5,
+    consoleColor = "&lt;32,32,32&gt;",
+    activeTabFGColor = "white",
+    fontSize = 10,
+    tabFontSize = morqui.consoleFontSize,
+      consoles = {
+        "Map",
+        "Inventory",
+        "EQ",
+      },
+    mapTab = true,
+    mapTabName = "Map",
+    activeTabCSS = tabStylesheet,
+    inactiveTabCSS = tabIStylesheet,
+    }, morqui.right)
+end</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>morqui.affectsConsole</name>
+					<packageName></packageName>
+					<script>function morqui.affectsConsoleInit()
+
+  abilitieswindowEMCO = EMCO:new({
+    name="morqui.abilityConsole",
+    adjLabelstyle = "background-color:rgba(220,220,220,100%); border: 5px groove grey;",
+    x = "0px",
+    y = fontHeight * 22,
+    height = "20c",
+    width = "100%",
+    autoWrap = true,
+    color = "grey",
+    scrollBar = false,
+    fontSize = morqui.consoleFontSize,
+    --autoLoad = false,
+    gap = 5,
+    consoleColor = "black",
+    activeTabFGColor = "white",
+    fontSize = morqui.consoleFontSize,
+    tabFontSize = morqui.consoleFontSize,
+      consoles = {
+        "Affects",
+        "Abilities",
+        "Cooldowns",
+      },
+    activeTabCSS = tabStylesheet,
+    inactiveTabCSS = tabIStylesheet,
+  }, morqui.right)  
+end</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>New script</name>
+					<packageName></packageName>
+					<script>function testContainer(name)
+  Adjustable.Container:new(
+    {
+      name = name,
+      adjLabelstyle = "background-color:rgba(0,0,0,100%); border: 5px groove gold;",
+      --buttonstyle=[[
+      --QLabel{ border-radius: 7px; background-color: rgba(140,140,140,100%);}
+      --QLabel::hover{ background-color: rgba(255,255,255,100%);}
+      --]],
+      buttonFontSize = 10,
+      buttonsize = 20,
+      titleText = "My new Style",
+      titleTxtColor = "black",
+      padding = 15,
+    }
+  )
+end</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>Build the adjustable consoles</name>
+					<packageName></packageName>
+					<script>function morqui.buildConsoles(name)
+  
+  
+  -- Set the size of the left console
+  leftWidth = fontWidth * 50
+    
+  -- Set the size of the right console
+  rightWidth = mainWidth - leftWidth - (fontWidth * 120)
+
+  -- Set the size of the bottom console
+  bottomHeight = fontHeight * 5
+  bottomPosition = fontHeight * 5 * -1
+  
+  -- Set the size of the right console
+  rightWidth = mainWidth - leftWidth - (fontWidth * 120)
+  
+  if name == "left" then
+    
+    morqui.left = Adjustable.Container:new(
+      {
+        --adjLabelstyle = "background-color:rgba(0,0,0,100%); border: 3px groove DodgerBlue;",
+        adjLabelstyle = "background-color:rgba(32,32,32,100%)",
+        name = "left",
+        x = "0%",
+        y = "0%",
+        height = "100%",
+        width = leftWidth,
+        autoLoad = false
+      }
+    )  
+  end
+  
+  if name == "right" then
+    
+    
+  
+    morqui.right = Adjustable.Container:new(
+      {
+        --adjLabelstyle = "background-color:rgba(0,0,0,100%); border: 3px groove DodgerBlue;",
+        adjLabelstyle = "background-color:rgba(32,32,32,100%)",
+        name = "right",
+        y = "0%", height = "100%",
+        x = rightWidth*-1,
+        width = rightWidth,
+        autoLoad = false
+      }
+    )
+  end
+  
+  if name == "bottom" then
+    morqui.bottom = Adjustable.Container:new(
+      {
+        --adjLabelstyle = "background-color:rgba(0,0,0,100%); border: 3px groove DodgerBlue;",
+        name = "bottom",
+        height = bottomHeight,
+        y = bottomPosition,
+        autoLoad = false
+      }
+    )
+  end
+end</script>
+					<eventHandlerList />
+				</Script>
+			</ScriptGroup>
+			<ScriptGroup isActive="yes" isFolder="yes">
+				<name>Quests</name>
+				<packageName></packageName>
+				<script></script>
+				<eventHandlerList />
+				<Script isActive="yes" isFolder="no">
+					<name>Update new quests before accepting</name>
+					<packageName></packageName>
+					<script>if gmcp.Room.Info.quest ~= 0 and not morqui.questTable[gmcp.Room.Info.quest] then  
+      morqui.updateQuestTable("New")
+end
+registerAnonymousEventHandler("gmcp.Room.Info","morqui.showRoomInfo")</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>Update quest information table</name>
+					<packageName></packageName>
+					<script>function morqui.updateQuestTable(questType, questObjective)
+  morqui.questTable = morqui.questTable or {}
+  
+  if gmcp.Room.Info.quest &gt; 0 then
+    
+    setRoomEnv(getPlayerRoom(), 267) -- Allways color quest rooms yellow
+    
+    if questType == "New" then
+    
+      morqui.questTable[gmcp.Room.Info.quest] = 
+        {
+        questId = gmcp.Room.Info.quest,
+        questName = gmcp.Room.Info.questname,
+        questArea = gmcp.Room.Info.area,
+        questRoomName = gmcp.Room.Info.name,
+        questRoomid = gmcp.Room.Info.id,
+        questType = questType,
+        --questObjective = questObjective,
+        questRepeats = 1,
+        questStatus = "New"
+        }
+      else
+      morqui.questTable[gmcp.Room.Info.quest] = 
+        {
+        questId = gmcp.Room.Info.quest,
+        questName = gmcp.Room.Info.questname,
+        questArea = gmcp.Room.Info.area,
+        questRoomName = gmcp.Room.Info.name,
+        questRoomid = gmcp.Room.Info.id,
+        questType = questType,
+        questObjective = questObjective,
+        questRepeats = 1,
+        questStatus = "In progress"
+        }
+      end
+       
+    table.save(getMudletHomeDir().."/morqui.questTable.lua", morqui.questTable)
+  end
+
+end</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>Update quest item table</name>
+					<packageName></packageName>
+					<script>function morqui.updateQuestItemTable(questRepeats)
+  morqui.questTable = morqui.questTable or {}
+  
+  if gmcp.Room.Info.quest &gt; 0 then
+    
+    morqui.questTable[gmcp.Room.Info.quest].questRepeats = tonumber(questRepeats)
+         
+    table.save(getMudletHomeDir().."/morqui.questTable.lua", morqui.questTable)
+  end
+
+end</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>Show discovered quests in area</name>
+					<packageName></packageName>
+					<script>function showQuestInArea()
+  cecho("\n&lt;white&gt;Quests found in current area: &lt;green&gt;"..string.title(string.gsub(gmcp.Room.Info.area, "_", " ")).."&lt;grey&gt;.\nClick the quest id number to read the journal page\n\n")
+  
+  cecho("&lt;white&gt;    Id Quest (click to walk)                    Progress       Type\n")
+  cecho(string.rep("-",84).."\n")
+  for k,v in spairs(morqui.questTable) do
+    if morqui.questTable[k].questArea == gmcp.Room.Info.area then
+      
+      if morqui.questTable[k].questType == "Kill" then
+       questTypeColor = "&lt;red&gt;"
+      elseif morqui.questTable[k].questType == "Item" then 
+       questTypeColor = "&lt;LightSkyBlue&gt;"
+      elseif morqui.questTable[k].questType == "Delivery" then
+       questTypeColor = "&lt;DarkViolet&gt;"
+      elseif morqui.questTable[k].questType == "New" then
+      questTypeColor = "&lt;green&gt;"
+      end
+      
+      if morqui.questTable[k].questStatus == "Done" then
+        questStatusColor = "&lt;dodger_blue&gt;"
+      elseif morqui.questTable[k].questStatus == "In progress" then
+        questStatusColor = "&lt;gold&gt;"
+      elseif morqui.questTable[k].questStatus == "New" then
+        questStatusColor = "&lt;green&gt;"
+      end
+        cecho("&lt;white&gt;#"..string.rep(" ", 5-string.len(morqui.questTable[k].questId)))
+        cechoLink("&lt;dodger_blue&gt;"..morqui.questTable[k].questId, [[send("journal read ]]..morqui.questTable[k].questId..[[")]], "Read journal for quest "..morqui.questTable[k].questId, true)
+        cechoLink(" &lt;green&gt;"..morqui.questTable[k].questName, [[send("moveto ]]..morqui.questTable[k].questId..[[")]], "Move to quest "..morqui.questTable[k].questId, true)
+        cecho(" "..string.rep(" ", 40-string.len(morqui.questTable[k].questName))..questStatusColor..morqui.questTable[k].questStatus..string.rep(" ", 15-string.len(morqui.questTable[k].questStatus))..returnQuestTypeColor(morqui.questTable[k].questType)..morqui.questTable[k].questType.."\n")
+    end
+  
+  end
+end</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>Show quests items requested</name>
+					<packageName></packageName>
+					<script>function showQuestItems()
+  cecho("\n&lt;white&gt;Quests items you need to find\n\n")
+  
+  cecho("&lt;white&gt;    Id Quest (click to walk)                   Item/Target                   Type\n")
+  cecho(string.rep("-",84).."\n")
+  for k,v in spairs(morqui.questTable) do
+         
+    if morqui.questTable[k].questStatus == "Done" then
+        questStatusColor = "&lt;dodger_blue&gt;"
+      elseif morqui.questTable[k].questStatus == "In progress" then
+        questStatusColor = "&lt;gold&gt;"
+      elseif morqui.questTable[k].questStatus == "New" then
+        questStatusColor = "&lt;green&gt;"
+    end
+      
+    if morqui.questTable[k].questObjective and morqui.questTable[k].questStatus ~= "Done" then
+      cecho("&lt;white&gt;#"..string.rep(" ", 5-string.len(morqui.questTable[k].questId)))
+      cechoLink("&lt;dodger_blue&gt;"..morqui.questTable[k].questId, [[send("journal read ]]..morqui.questTable[k].questId..[[")]], "Read journal for quest "..morqui.questTable[k].questId, true)
+      cechoLink(" &lt;green&gt;"..morqui.questTable[k].questName, [[send("moveto ]]..morqui.questTable[k].questId..[[")]], "Move to quest "..morqui.questTable[k].questId, true)
+      cecho(" "..string.rep(" ", 38-string.len(morqui.questTable[k].questName)).."&lt;DodgerBlue&gt;"..string.rep(" ", 2-string.len(morqui.questTable[k].questRepeats))..morqui.questTable[k].questRepeats.." &lt;gold&gt;"..morqui.questTable[k].questObjective..string.rep(" ", 28-string.len(morqui.questTable[k].questObjective))..returnQuestTypeColor(morqui.questTable[k].questType)..morqui.questTable[k].questType.."\n")
+    end
+  end
+end</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>Return Quest Type Color</name>
+					<packageName></packageName>
+					<script>function returnQuestTypeColor(questType)
+  local questType = questType
+  if questType == "Kill" then
+      return "&lt;red&gt;"
+    elseif questType == "Item" then 
+      return "&lt;LightSkyBlue&gt;"
+    elseif questType == "Delivery" then
+      return "&lt;DarkViolet&gt;"
+    elseif questType == "New" then
+      return "&lt;green&gt;"
+    else return "&lt;dodger_blue&gt;"
+  end
+end</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>Count Quest Items</name>
+					<packageName></packageName>
+					<script>function countQuestItems(item)
+
+  local itemCount = 0
+
+  for k,v in spairs(morqui.questTable) do
+    if morqui.questTable[k].questObjective == item then
+      itemCount = itemCount + morqui.questTable[k].questRepeats
+    end
+  end
+  return itemCount
+end
+
+</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>Check if Item or mob is Quest Objective</name>
+					<packageName></packageName>
+					<script>function checkIfQuestObjective(str)
+  
+  local questId = {}
+  
+  for k, v in spairs(morqui.questTable) do
+    if morqui.questTable[k].questObjective == str and morqui.questTable[k].questStatus ~= "Done" then
+       table.insert(questId,morqui.questTable[k].questId)
+    end
+  end
+  
+  return questId
+  
+end</script>
+					<eventHandlerList />
+				</Script>
+			</ScriptGroup>
+			<ScriptGroup isActive="yes" isFolder="yes">
+				<name>Utility Scripts</name>
+				<packageName></packageName>
+				<script></script>
+				<eventHandlerList />
+				<Script isActive="yes" isFolder="no">
+					<name>Fix unwanted chars from item names</name>
+					<packageName></packageName>
+					<script>function morqui.fixItemName(s)
+
+return string.gsub(string.gsub(string.gsub(string.gsub(string.lower(s)," ","_"),"'",""),"\"",""),",","")
+end</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>Add proper number seperator</name>
+					<packageName></packageName>
+					<script>function addNumberSeperator(v)
+  local s = string.format("%d", math.floor(v))
+    local pos = string.len(s) % 3
+    if pos == 0 then pos = 3 end
+    return string.sub(s, 1, pos)
+    .. string.gsub(string.sub(s, pos+1), "(...)", ".%1")
+end</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>Pad and truncate numbers</name>
+					<packageName></packageName>
+					<script>function padAndTruncate(str)
+  local str_padded = string.format("%2s", string.sub(str, 1, 2))
+  return str_padded
+end</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>Round Numbers</name>
+					<packageName></packageName>
+					<script>function round(number, sigDigits)
+  local decimalPlace = string.find(number, "%.")
+  if not decimalPlace or (sigDigits &lt; decimalPlace) then
+    numberTable = {}
+    count = 1
+    for digit in string.gmatch(number, "%d") do
+      table.insert(numberTable, digit)
+    end
+    local endNumber = ""
+    for i,digit in ipairs(numberTable) do
+      if i &lt; sigDigits then
+        endNumber = endNumber .. digit
+      end
+      if i == sigDigits then
+        if tonumber(numberTable[i + 1]) &gt;= 5 then
+          endNumber = endNumber .. digit + 1
+        else
+          endNumber = endNumber .. digit
+        end
+      end
+      if i &gt; sigDigits and (not decimalPlace or (i &lt; decimalPlace)) then
+        endNumber = endNumber .. "0"
+      end
+    end
+    return tonumber(endNumber)      
+  else
+    local decimalDigits = sigDigits - decimalPlace + 1
+    return string.gsub(tonumber(string.format("%" .. decimalPlace - 1 .. "." .. decimalDigits .. "f", number)),"%.",",")
+    --return tonumber(string.format("%" .. decimalPlace - 1 .. "." .. decimalDigits .. "f", number))
+  end
+end</script>
+					<eventHandlerList />
+				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>Show GMCP Values</name>
+					<packageName></packageName>
+					<script>function morqui.showGMCP(event)
+--echo("\n")
+--cecho("\n&lt;dodger_blue&gt;[&lt;gold&gt;MorqUI&lt;dodger_blue&gt;]&lt;white&gt; "..event)
+--echo("\n")
+  if event == "gmcp.Room" then
+    --display("gmcp.Room\n")
+    --display(gmcp.Room)
+    --display("Mapper Room ID: "..getPlayerRoom())
+  end
+  if event == "gmcp.Room.Info" then
+    --display("gmcp.Room.Info\n")
+    --display(gmcp.Room.Info)
+    --display("Mapper Room ID: "..getPlayerRoom())
+  end
+  if event == "gmcp.Char" then
+    --display(gmcp.Char)
+  end
+end
+
+registerAnonymousEventHandler("gmcp.Room","morqui.showGMCP")
+registerAnonymousEventHandler("gmcp.Room.Info","morqui.showGMCP")
+registerAnonymousEventHandler("gmcp.Char","morqui.showGMCP")</script>
+					<eventHandlerList />
+				</Script>
+			</ScriptGroup>
+			<ScriptGroup isActive="yes" isFolder="yes">
+				<name>Notes and information scripts</name>
+				<packageName></packageName>
+				<script></script>
+				<eventHandlerList />
+				<Script isActive="yes" isFolder="no">
+					<name>Save room notes</name>
+					<packageName></packageName>
+					<script>function morqui.saveRoomNotes(note, roomId)
+  morqui.roomNotesTable = morqui.roomNotesTable or {}
+  
+  local x
+  
+  
+  -- If we don't get a specific room id, use current room
+  if roomId then
+    x = roomId
+    else
+    x = gmcp.Room.Info.id
+  end
+  
+  morqui.roomNotesTable[x] =
+    {
+    notes = note
+    }
+
+  cecho("\n&lt;DodgerBlue&gt;Thank you!\n")
+  cecho("\n&lt;DodgerBlue&gt;Room notes saved for room id &lt;green&gt;"..x.."&lt;white&gt;: &lt;gold&gt;"..morqui.roomNotesTable[gmcp.Room.Info.id].notes.."\n\n")
+
+  -- Save the notes table so we can use it later
+  table.save(getMudletHomeDir().."/morqui.roomNotesTable.lua", morqui.roomNotesTable)
+  
+  -- Once the note is saved, reload the room info
+  morqui.showRoomInfo()
+
+end</script>
+					<eventHandlerList />
+				</Script>
+			</ScriptGroup>
+		</ScriptGroup>
+	</ScriptPackage>
+</MudletPackage>
