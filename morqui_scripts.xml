@@ -143,7 +143,7 @@ function morqui.charConsoleInit()
     name="morqui.charConsole",
     x="0",
     y="0",
-    height="30c",
+    height="20c",
     width="100%",
     autoWrap = true,
     scrollBar = false,
@@ -191,9 +191,9 @@ function morqui.showPlayerInfo()
   charwindowEMCO:cecho("Char","\n")
   charwindowEMCO:cecho("Char",fText.fText("Stats", {width = leftWidth/fontWidth, alignment = "center", formatType = "c", textColor = "&lt;green&gt;", capColor = "&lt;dodger_blue&gt;", cap = "[", spacer = "-", inside = false, mirror = true}))
   charwindowEMCO:cecho("Char","\n")
-  charwindowEMCO:cecho("Char","&lt;dodger_blue&gt; STR AGI VIT SPD INT SPR &lt;gold&gt;ARM")
+  charwindowEMCO:cecho("Char","&lt;dodger_blue&gt; STR AGI VIT SPD INT SPR &lt;gold&gt;ARM &lt;cyan&gt;EVA")
   charwindowEMCO:cecho("Char","\n")
-  charwindowEMCO:cecho("Char","&lt;white&gt;  "..padAndTruncate(gmcp.Char.Stats.str).."  "..padAndTruncate(gmcp.Char.Stats.agi).."  "..padAndTruncate(gmcp.Char.Stats.vit).."  "..padAndTruncate(gmcp.Char.Stats.spd).."  "..padAndTruncate(gmcp.Char.Stats.int).."  "..padAndTruncate(gmcp.Char.Stats.spr).."  &lt;gold&gt;"..padAndTruncate(gmcp.Char.Stats.arm))
+  charwindowEMCO:cecho("Char","&lt;white&gt;  "..padAndTruncate(gmcp.Char.Stats.str).."  "..padAndTruncate(gmcp.Char.Stats.agi).."  "..padAndTruncate(gmcp.Char.Stats.vit).."  "..padAndTruncate(gmcp.Char.Stats.spd).."  "..padAndTruncate(gmcp.Char.Stats.int).."  "..padAndTruncate(gmcp.Char.Stats.spr).."  &lt;gold&gt;"..padAndTruncate(gmcp.Char.Stats.arm).."  &lt;cyan&gt;"..padAndTruncate(gmcp.Char.Stats.eva))
   charwindowEMCO:cecho("Char","\n")
   charwindowEMCO:cecho("Char","\n")
   charwindowEMCO:cecho("Char","&lt;dodger_blue&gt;      Crit&lt;white&gt;: &lt;red&gt;"..padAndTruncate(gmcp.Char.Stats.crit))
@@ -238,10 +238,9 @@ function morqui.showRoomInfo()
   if gmcp.World.Info == nil then return end
     
   morqui.roomConsole:clear()
-  charwindowEMCO:cecho("Char","\n")
-  cecho("morqui.roomConsole",fText.fText("Room Information &lt;gold&gt;# &lt;green&gt;"..gmcp.Room.Info.id, {width = leftWidth/fontWidth, alignment = "center", formatType = "c", textColor = "&lt;orange&gt;", capColor = "&lt;dodger_blue&gt;", cap = "[", spacer = "-", inside = false, mirror = true}))
+  cecho("morqui.roomConsole",fText.fText("Room Information &lt;gold&gt;# &lt;green&gt;"..gmcp.Room.Info.num, {width = leftWidth/fontWidth, alignment = "center", formatType = "c", textColor = "&lt;orange&gt;", capColor = "&lt;dodger_blue&gt;", cap = "[", spacer = "-", inside = false, mirror = true}))
   cecho("morqui.roomConsole", "\n")
-  cecho("morqui.roomConsole", " &lt;dodger_blue&gt;Area&lt;white&gt; : ".. "&lt;gold&gt;"..string.title(string.gsub(gmcp.Room.Info.area, "_", " "))..string.rep(" ", 25-string.len(gmcp.Room.Info.area)).."&lt;dodger_blue&gt;Sector&lt;white&gt;: ".. "&lt;white&gt;"..gmcp.Room.Info.sector)
+  cecho("morqui.roomConsole", " &lt;dodger_blue&gt;Area&lt;white&gt; : ".. "&lt;gold&gt;"..string.title(string.gsub(gmcp.Room.Info.area, "_", " "))..string.rep(" ", 25-string.len(gmcp.Room.Info.area)).."&lt;dodger_blue&gt;Sector&lt;white&gt;: ".. "&lt;white&gt;"..gmcp.Room.Info.environment)
    
   cecho("morqui.roomConsole", "\n")
   if string.len(gmcp.Room.Info.name) &gt; 50 then 
@@ -297,7 +296,7 @@ function morqui.showRoomInfo()
 end
 
 registerAnonymousEventHandler("gmcp.Room.Info","morqui.showRoomInfo")
-registerAnonymousEventHandler("gmcp.World.Info","morqui.showRoomInfo")</script>
+--registerAnonymousEventHandler("gmcp.World.Info","morqui.showRoomInfo")</script>
 					<eventHandlerList />
 				</Script>
 				<Script isActive="yes" isFolder="no">
@@ -530,14 +529,14 @@ end</script>
   leftWidth = fontWidth * 50
     
   -- Set the size of the right console
-  rightWidth = mainWidth - leftWidth - (fontWidth * 120)
+  rightWidth = mainWidth - leftWidth - (fontWidth * 110)
 
   -- Set the size of the bottom console
   bottomHeight = fontHeight * 5
   bottomPosition = fontHeight * 5 * -1
   
   -- Set the size of the right console
-  rightWidth = mainWidth - leftWidth - (fontWidth * 120)
+  rightWidth = mainWidth - leftWidth - (fontWidth * 110)
   
   if name == "left" then
     
@@ -595,9 +594,14 @@ end</script>
 				<Script isActive="yes" isFolder="no">
 					<name>Update new quests before accepting</name>
 					<packageName></packageName>
-					<script>if gmcp.Room.Info.quest ~= 0 and not morqui.questTable[gmcp.Room.Info.quest] then  
-      morqui.updateQuestTable("New")
+					<script>function morqui.updateUnknownQuest()
+  if gmcp.Room.Info.quest &gt; 0 and not morqui.questTable[gmcp.Room.Info.quest] then
+    morqui.updateQuestTable("New")
+  end
 end
+
+
+registerAnonymousEventHandler("gmcp.Room.Info","morqui.updateUnknownQuest")
 registerAnonymousEventHandler("gmcp.Room.Info","morqui.showRoomInfo")</script>
 					<eventHandlerList />
 				</Script>
@@ -608,31 +612,38 @@ registerAnonymousEventHandler("gmcp.Room.Info","morqui.showRoomInfo")</script>
   morqui.questTable = morqui.questTable or {}
   
   if gmcp.Room.Info.quest &gt; 0 then
-    
-    setRoomEnv(getPlayerRoom(), 267) -- Allways color quest rooms yellow
-    
+  
+    setRoomEnv(gmcp.Room.Info.num, 267) -- Allways color quest rooms yellow
+   
     if questType == "New" then
-    
+      cecho("\n&lt;dodger_blue&gt;GUI                &lt;white&gt;: &lt;gold&gt;Saving unknown quest in room...\n\n")
       morqui.questTable[gmcp.Room.Info.quest] = 
         {
         questId = gmcp.Room.Info.quest,
         questName = gmcp.Room.Info.questname,
         questArea = gmcp.Room.Info.area,
         questRoomName = gmcp.Room.Info.name,
-        questRoomid = gmcp.Room.Info.id,
+        questRoomId = gmcp.Room.Info.num,
+        questRoomEnvironment = gmcp.Room.Info.environment, -- only used to reset colors
         questType = questType,
         --questObjective = questObjective,
         questRepeats = 1,
         questStatus = "New"
         }
       else
+      
+      if getRoomChar(gmcp.Room.Info.num) == "" then
+        setRoomChar(gmcp.Room.Info.num, "Q") -- Set Q in all quest rooms
+      end
+      
       morqui.questTable[gmcp.Room.Info.quest] = 
         {
         questId = gmcp.Room.Info.quest,
         questName = gmcp.Room.Info.questname,
         questArea = gmcp.Room.Info.area,
         questRoomName = gmcp.Room.Info.name,
-        questRoomid = gmcp.Room.Info.id,
+        questRoomId = gmcp.Room.Info.num,
+        questRoomEnvironment = gmcp.Room.Info.environment, -- only used to reset colors
         questType = questType,
         questObjective = questObjective,
         questRepeats = 1,
@@ -782,6 +793,119 @@ end
 end</script>
 					<eventHandlerList />
 				</Script>
+				<Script isActive="yes" isFolder="no">
+					<name>Set Color on Quest Rooms</name>
+					<packageName></packageName>
+					<script>function morqui.colorQuestRooms(action)
+
+  local char = "getRoomChar(morqui.questTable[k].questRoomId)"
+
+  for k,v in spairs(morqui.questTable) do
+
+    if action == "add" then 
+      setRoomEnv(morqui.questTable[k].questRoomId, 267) -- Allways color quest rooms yellow
+      
+      if char ~= "T" or char ~= "$" or char ~= "B" then
+       setRoomChar(morqui.questTable[k].questRoomId,"Q")
+      end
+      
+      
+      
+    end
+
+    if action == "remove" then    
+      setRoomEnv(morqui.questTable[k].questRoomId, mmp.envids[morqui.questTable[k].questRoomEnvironment])
+      --if getRoomChar(morqui.questTable[k].questRoomId) ~= "T" or getRoomChar(morqui.questTable[k].questRoomId) ~= "$" or getRoomChar(morqui.questTable[k].questRoomId) ~= "B" then
+      if not rex.find(getRoomChar(morqui.questTable[k].questRoomId), [[T|B|\$]]) then
+        setRoomChar(morqui.questTable[k].questRoomId,"")
+      end
+
+    end
+
+  end
+
+end</script>
+					<eventHandlerList />
+				</Script>
+			</ScriptGroup>
+			<ScriptGroup isActive="yes" isFolder="yes">
+				<name>Notes and information scripts</name>
+				<packageName></packageName>
+				<script></script>
+				<eventHandlerList />
+				<Script isActive="yes" isFolder="no">
+					<name>Save room notes</name>
+					<packageName></packageName>
+					<script>function morqui.saveRoomNotes(note, roomId)
+  morqui.roomNotesTable = morqui.roomNotesTable or {}
+  
+  local x
+  
+  
+  -- If we don't get a specific room id, use current room
+  if roomId then
+    x = roomId
+    else
+    x = gmcp.Room.Info.id
+  end
+  
+  morqui.roomNotesTable[x] =
+    {
+    notes = note
+    }
+
+  cecho("\n&lt;DodgerBlue&gt;Thank you!\n")
+  cecho("\n&lt;DodgerBlue&gt;Room notes saved for room id &lt;green&gt;"..x.."&lt;white&gt;: &lt;gold&gt;"..morqui.roomNotesTable[gmcp.Room.Info.id].notes.."\n\n")
+
+  -- Save the notes table so we can use it later
+  table.save(getMudletHomeDir().."/morqui.roomNotesTable.lua", morqui.roomNotesTable)
+  
+  -- Once the note is saved, reload the room info
+  morqui.showRoomInfo()
+
+end</script>
+					<eventHandlerList />
+				</Script>
+			</ScriptGroup>
+			<ScriptGroup isActive="yes" isFolder="yes">
+				<name>GMCP Triggers</name>
+				<packageName></packageName>
+				<script></script>
+				<eventHandlerList />
+				<Script isActive="yes" isFolder="no">
+					<name>Show trainers, shops and quests on map</name>
+					<packageName></packageName>
+					<script>function morqui.setRoomChar()
+  
+  if gmcp.Room.Info.quest &gt; 0 and morqui.questTable[gmcp.Room.Info.quest] then
+    if morqui.questTable[gmcp.Room.Info.quest].questStatus == "Done" then
+      setRoomChar(gmcp.Room.Info.num, "")
+      setRoomEnv(gmcp.Room.Info.num, mmp.envids[gmcp.Room.Info.environment])
+    end
+    if morqui.questTable[gmcp.Room.Info.quest].questStatus ~= "Done" then
+      setRoomEnv(gmcp.Room.Info.num, 267)
+    end
+  end
+
+  if gmcp.Room.Info.shop ~= "" then
+    setRoomChar(gmcp.Room.Info.num, "$")
+  end
+  
+  if table.contains(gmcp.Room.Info.details, "teacher") then
+    if getRoomChar(gmcp.Room.Info.num) ~= "T" then
+      setRoomChar(gmcp.Room.Info.num, string.trim(getRoomChar(gmcp.Room.Info.num)).."T")
+    else 
+      setRoomChar(gmcp.Room.Info.num,"T")
+    end
+  end
+  
+
+end
+
+
+registerAnonymousEventHandler("gmcp.Room.Info","morqui.setRoomChar")</script>
+					<eventHandlerList />
+				</Script>
 			</ScriptGroup>
 			<ScriptGroup isActive="yes" isFolder="yes">
 				<name>Utility Scripts</name>
@@ -879,45 +1003,6 @@ end
 registerAnonymousEventHandler("gmcp.Room","morqui.showGMCP")
 registerAnonymousEventHandler("gmcp.Room.Info","morqui.showGMCP")
 registerAnonymousEventHandler("gmcp.Char","morqui.showGMCP")</script>
-					<eventHandlerList />
-				</Script>
-			</ScriptGroup>
-			<ScriptGroup isActive="yes" isFolder="yes">
-				<name>Notes and information scripts</name>
-				<packageName></packageName>
-				<script></script>
-				<eventHandlerList />
-				<Script isActive="yes" isFolder="no">
-					<name>Save room notes</name>
-					<packageName></packageName>
-					<script>function morqui.saveRoomNotes(note, roomId)
-  morqui.roomNotesTable = morqui.roomNotesTable or {}
-  
-  local x
-  
-  
-  -- If we don't get a specific room id, use current room
-  if roomId then
-    x = roomId
-    else
-    x = gmcp.Room.Info.id
-  end
-  
-  morqui.roomNotesTable[x] =
-    {
-    notes = note
-    }
-
-  cecho("\n&lt;DodgerBlue&gt;Thank you!\n")
-  cecho("\n&lt;DodgerBlue&gt;Room notes saved for room id &lt;green&gt;"..x.."&lt;white&gt;: &lt;gold&gt;"..morqui.roomNotesTable[gmcp.Room.Info.id].notes.."\n\n")
-
-  -- Save the notes table so we can use it later
-  table.save(getMudletHomeDir().."/morqui.roomNotesTable.lua", morqui.roomNotesTable)
-  
-  -- Once the note is saved, reload the room info
-  morqui.showRoomInfo()
-
-end</script>
 					<eventHandlerList />
 				</Script>
 			</ScriptGroup>
