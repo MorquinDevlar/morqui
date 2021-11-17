@@ -33,96 +33,11 @@
 				<regexCodeList />
 				<regexCodePropertyList />
 				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-					<name>Capture Quest Items Requested</name>
-					<script>if morqui.questCaptureTarget then
-  
-  cecho("\n&lt;dodger_blue&gt;Requested Quest Captured&lt;white&gt;: &lt;green&gt;#&lt;gold&gt; "..gmcp.Room.Info.quest.." &lt;green&gt;Type&lt;white&gt;: &lt;gold&gt;"..matches[2].." &lt;green&gt;Objective&lt;white&gt;: &lt;gold&gt;"..matches[3])
-
-  morqui.updateQuestTable(matches[2], matches[3])
-  
-  morqui.questCaptureTarget = false
-  morqui.showRoomInfo()
- 
-end</script>
-					<triggerType>0</triggerType>
-					<conditonLineDelta>0</conditonLineDelta>
-					<mStayOpen>0</mStayOpen>
-					<mCommand></mCommand>
-					<packageName></packageName>
-					<mFgColor>#ff0000</mFgColor>
-					<mBgColor>#ffff00</mBgColor>
-					<mSoundFile></mSoundFile>
-					<colorTriggerFgColor>#000000</colorTriggerFgColor>
-					<colorTriggerBgColor>#000000</colorTriggerBgColor>
-					<regexCodeList>
-						<string>^(Item|Kill) Requested: (.*)</string>
-					</regexCodeList>
-					<regexCodePropertyList>
-						<integer>1</integer>
-					</regexCodePropertyList>
-				</Trigger>
-				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-					<name>Capture Quest Ammounts Requested</name>
-					<script>if morqui.questCaptureAmmount then
-  
-  cecho("\n&lt;dodger_blue&gt;Requested Ammount Captured&lt;white&gt;: &lt;green&gt;#&lt;gold&gt; "..gmcp.Room.Info.quest.." &lt;green&gt;Ammount&lt;white&gt;: &lt;gold&gt;"..matches[2])
-  
-  morqui.updateQuestItemTable(matches[2])
-  
-  morqui.questCaptureAmmount = false
-end</script>
-					<triggerType>0</triggerType>
-					<conditonLineDelta>0</conditonLineDelta>
-					<mStayOpen>0</mStayOpen>
-					<mCommand></mCommand>
-					<packageName></packageName>
-					<mFgColor>#ff0000</mFgColor>
-					<mBgColor>#ffff00</mBgColor>
-					<mSoundFile></mSoundFile>
-					<colorTriggerFgColor>#000000</colorTriggerFgColor>
-					<colorTriggerBgColor>#000000</colorTriggerBgColor>
-					<regexCodeList>
-						<string>^You may perform this quest (\d+).* time.*\.$</string>
-					</regexCodeList>
-					<regexCodePropertyList>
-						<integer>1</integer>
-					</regexCodePropertyList>
-				</Trigger>
-				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-					<name>Capture Delivery Quests</name>
-					<script>if morqui.questCaptureTarget then
-  
-  cecho("\n&lt;dodger_blue&gt;Requested Quest Captured&lt;white&gt;: &lt;green&gt;#&lt;gold&gt; "..gmcp.Room.Info.quest.." &lt;green&gt;Type&lt;white&gt;: &lt;gold&gt;Delivery")
-
-  morqui.updateQuestTable("Delivery")
-
-  
-  morqui.questCaptureTarget = false
-  
-end</script>
-					<triggerType>0</triggerType>
-					<conditonLineDelta>0</conditonLineDelta>
-					<mStayOpen>0</mStayOpen>
-					<mCommand></mCommand>
-					<packageName></packageName>
-					<mFgColor>#ff0000</mFgColor>
-					<mBgColor>#ffff00</mBgColor>
-					<mSoundFile></mSoundFile>
-					<colorTriggerFgColor>#000000</colorTriggerFgColor>
-					<colorTriggerBgColor>#000000</colorTriggerBgColor>
-					<regexCodeList>
-						<string>Use the OFFER command to complete this quest.</string>
-					</regexCodeList>
-					<regexCodePropertyList>
-						<integer>0</integer>
-					</regexCodePropertyList>
-				</Trigger>
-				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 					<name>Show quest information in room</name>
 					<script>if gmcp.Room.Info.shop == "" then
-  setRoomChar(getPlayerRoom(), "Q")
+  --setRoomChar(getPlayerRoom(), "Q")
 end
-setRoomEnv(getPlayerRoom(), 267) -- Allways color quest rooms yellow
+--setRoomEnv(getPlayerRoom(), 267) -- Allways color quest rooms yellow
 if morqui.questTable[gmcp.Room.Info.quest] then 
   if morqui.questTable[gmcp.Room.Info.quest].questStatus == "In progress" then 
     
@@ -154,32 +69,6 @@ end</script>
 						<string>^.* is offering a quest\. \(QUEST\)</string>
 					</regexCodeList>
 					<regexCodePropertyList>
-						<integer>1</integer>
-					</regexCodePropertyList>
-				</Trigger>
-				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-					<name>Mark Finished Quests Done</name>
-					<script>morqui.questTable[gmcp.Room.Info.quest].questStatus = "Done"
-cecho("\n&lt;dodger_blue&gt;Quest "..gmcp.Room.Info.quest.." done&lt;white&gt;: &lt;green&gt;Tables updated")
-setRoomChar(getPlayerRoom(), "")
-setRoomEnv(getPlayerRoom(), 257) -- Switch back to the normal room color
-morqui.showRoomInfo()</script>
-					<triggerType>0</triggerType>
-					<conditonLineDelta>0</conditonLineDelta>
-					<mStayOpen>0</mStayOpen>
-					<mCommand></mCommand>
-					<packageName></packageName>
-					<mFgColor>#ff0000</mFgColor>
-					<mBgColor>#ffff00</mBgColor>
-					<mSoundFile></mSoundFile>
-					<colorTriggerFgColor>#000000</colorTriggerFgColor>
-					<colorTriggerBgColor>#000000</colorTriggerBgColor>
-					<regexCodeList>
-						<string>You will learn nothing from completing this quest again.</string>
-						<string>^You may only perform this quest \d+ times?.</string>
-					</regexCodeList>
-					<regexCodePropertyList>
-						<integer>0</integer>
 						<integer>1</integer>
 					</regexCodePropertyList>
 				</Trigger>
@@ -249,7 +138,28 @@ end</script>
 				</Trigger>
 				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 					<name>Check Rooms for Quest Items</name>
-					<script>echo("\nItems captured: "..matches[2])</script>
+					<script>for k,v in pairs(string.split(matches[2],",")) do
+  local item = string.trim(string.split(matches[2],",")[k])
+  local itemcolor
+  
+  if rex.find(matches[1], ".*Items.*") then
+    itemcolor = "&lt;green&gt;"
+  end
+  if rex.find(matches[1], ".*Peacefuls.*") then
+    itemcolor = "&lt;cyan&gt;"
+  end
+  if rex.find(matches[1], ".*Hostiles.*") then
+    itemcolor = "&lt;red&gt;"
+  end
+  
+  for k, v in pairs(morqui.questTable) do
+    if morqui.questTable[k].questObjective == item and morqui.questTable[k].questStatus ~= "Done" then
+      selectString(item,1)
+      creplace(itemcolor..item.."&lt;magenta&gt; Q! &lt;white&gt;(&lt;green&gt;"..countQuestItems(matches[2]).."&lt;white&gt;)&lt;reset&gt;")
+    end
+  end
+
+end</script>
 					<triggerType>0</triggerType>
 					<conditonLineDelta>0</conditonLineDelta>
 					<mStayOpen>0</mStayOpen>
@@ -262,32 +172,18 @@ end</script>
 					<colorTriggerBgColor>#000000</colorTriggerBgColor>
 					<regexCodeList>
 						<string>^Items:\s(.*)</string>
+						<string>^Peacefuls:\s(.*)</string>
+						<string>^Hostiles:\s(.*)</string>
 					</regexCodeList>
 					<regexCodePropertyList>
 						<integer>1</integer>
+						<integer>1</integer>
+						<integer>1</integer>
 					</regexCodePropertyList>
 				</Trigger>
-			</TriggerGroup>
-			<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-				<name>Highlight Rooms</name>
-				<script></script>
-				<triggerType>0</triggerType>
-				<conditonLineDelta>0</conditonLineDelta>
-				<mStayOpen>0</mStayOpen>
-				<mCommand></mCommand>
-				<packageName></packageName>
-				<mFgColor>#ff0000</mFgColor>
-				<mBgColor>#ffff00</mBgColor>
-				<mSoundFile></mSoundFile>
-				<colorTriggerFgColor>#000000</colorTriggerFgColor>
-				<colorTriggerBgColor>#000000</colorTriggerBgColor>
-				<regexCodeList />
-				<regexCodePropertyList />
-				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-					<name>Show shops on the map</name>
-					<script>if gmcp.Room.Info.shop ~= "" then
-  setRoomChar(getPlayerRoom(), "$")
-end</script>
+				<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+					<name>Quest Capture</name>
+					<script></script>
 					<triggerType>0</triggerType>
 					<conditonLineDelta>0</conditonLineDelta>
 					<mStayOpen>0</mStayOpen>
@@ -298,35 +194,120 @@ end</script>
 					<mSoundFile></mSoundFile>
 					<colorTriggerFgColor>#000000</colorTriggerFgColor>
 					<colorTriggerBgColor>#000000</colorTriggerBgColor>
-					<regexCodeList>
-						<string>^.*has a shop that buys and sells items\. \(LIST\)$</string>
-					</regexCodeList>
-					<regexCodePropertyList>
-						<integer>1</integer>
-					</regexCodePropertyList>
-				</Trigger>
-				<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
-					<name>Show trainers on the map</name>
-					<script>if gmcp.Room.Info.shop == "" then
-  setRoomChar(getPlayerRoom(), "T")
+					<regexCodeList />
+					<regexCodePropertyList />
+					<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+						<name>Capture Delivery Quests</name>
+						<script>if morqui.questCaptureTarget then
+  
+  cecho("\n&lt;dodger_blue&gt;Requested Quest Captured&lt;white&gt;: &lt;green&gt;#&lt;gold&gt; "..gmcp.Room.Info.quest.." &lt;green&gt;Type&lt;white&gt;: &lt;gold&gt;Delivery")
+
+  morqui.updateQuestTable("Delivery")
+
+  
+  morqui.questCaptureTarget = false
+  
 end</script>
-					<triggerType>0</triggerType>
-					<conditonLineDelta>0</conditonLineDelta>
-					<mStayOpen>0</mStayOpen>
-					<mCommand></mCommand>
-					<packageName></packageName>
-					<mFgColor>#ff0000</mFgColor>
-					<mBgColor>#ffff00</mBgColor>
-					<mSoundFile></mSoundFile>
-					<colorTriggerFgColor>#000000</colorTriggerFgColor>
-					<colorTriggerBgColor>#000000</colorTriggerBgColor>
-					<regexCodeList>
-						<string>^.*is offering to teach abilities\. \(LEARN\)$</string>
-					</regexCodeList>
-					<regexCodePropertyList>
-						<integer>1</integer>
-					</regexCodePropertyList>
-				</Trigger>
+						<triggerType>0</triggerType>
+						<conditonLineDelta>0</conditonLineDelta>
+						<mStayOpen>0</mStayOpen>
+						<mCommand></mCommand>
+						<packageName></packageName>
+						<mFgColor>#ff0000</mFgColor>
+						<mBgColor>#ffff00</mBgColor>
+						<mSoundFile></mSoundFile>
+						<colorTriggerFgColor>#000000</colorTriggerFgColor>
+						<colorTriggerBgColor>#000000</colorTriggerBgColor>
+						<regexCodeList>
+							<string>Use the OFFER command to complete this quest.</string>
+						</regexCodeList>
+						<regexCodePropertyList>
+							<integer>0</integer>
+						</regexCodePropertyList>
+					</Trigger>
+					<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+						<name>Capture Quest Ammounts Requested</name>
+						<script>if morqui.questCaptureAmmount then
+  
+  cecho("\n&lt;dodger_blue&gt;Requested Ammount Captured&lt;white&gt;: &lt;green&gt;#&lt;gold&gt; "..gmcp.Room.Info.quest.." &lt;green&gt;Ammount&lt;white&gt;: &lt;gold&gt;"..matches[2])
+  
+  morqui.updateQuestItemTable(matches[2])
+  
+  morqui.questCaptureAmmount = false
+end</script>
+						<triggerType>0</triggerType>
+						<conditonLineDelta>0</conditonLineDelta>
+						<mStayOpen>0</mStayOpen>
+						<mCommand></mCommand>
+						<packageName></packageName>
+						<mFgColor>#ff0000</mFgColor>
+						<mBgColor>#ffff00</mBgColor>
+						<mSoundFile></mSoundFile>
+						<colorTriggerFgColor>#000000</colorTriggerFgColor>
+						<colorTriggerBgColor>#000000</colorTriggerBgColor>
+						<regexCodeList>
+							<string>^You may perform this quest (\d+).* time.*\.$</string>
+						</regexCodeList>
+						<regexCodePropertyList>
+							<integer>1</integer>
+						</regexCodePropertyList>
+					</Trigger>
+					<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+						<name>Capture Quest Items Requested</name>
+						<script>if morqui.questCaptureTarget then
+  
+  cecho("\n&lt;dodger_blue&gt;Requested Quest Captured&lt;white&gt;: &lt;green&gt;#&lt;gold&gt; "..gmcp.Room.Info.quest.." &lt;green&gt;Type&lt;white&gt;: &lt;gold&gt;"..matches[2].." &lt;green&gt;Objective&lt;white&gt;: &lt;gold&gt;"..matches[3])
+
+  morqui.updateQuestTable(matches[2], matches[3])
+  
+  morqui.questCaptureTarget = false
+  morqui.showRoomInfo()
+ 
+end</script>
+						<triggerType>0</triggerType>
+						<conditonLineDelta>0</conditonLineDelta>
+						<mStayOpen>0</mStayOpen>
+						<mCommand></mCommand>
+						<packageName></packageName>
+						<mFgColor>#ff0000</mFgColor>
+						<mBgColor>#ffff00</mBgColor>
+						<mSoundFile></mSoundFile>
+						<colorTriggerFgColor>#000000</colorTriggerFgColor>
+						<colorTriggerBgColor>#000000</colorTriggerBgColor>
+						<regexCodeList>
+							<string>^(Item|Kill) Requested: (.*)</string>
+						</regexCodeList>
+						<regexCodePropertyList>
+							<integer>1</integer>
+						</regexCodePropertyList>
+					</Trigger>
+					<Trigger isActive="yes" isFolder="no" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
+						<name>Mark Finished Quests Done</name>
+						<script>morqui.questTable[gmcp.Room.Info.quest].questStatus = "Done"
+cecho("\n&lt;dodger_blue&gt;Quest "..gmcp.Room.Info.quest.." done&lt;white&gt;: &lt;green&gt;Tables updated")
+--setRoomEnv(gmcp.Room.Info.num, mmp.envids[gmcp.Room.Info.environment])
+morqui.setRoomChar()
+morqui.showRoomInfo()</script>
+						<triggerType>0</triggerType>
+						<conditonLineDelta>0</conditonLineDelta>
+						<mStayOpen>0</mStayOpen>
+						<mCommand></mCommand>
+						<packageName></packageName>
+						<mFgColor>#ff0000</mFgColor>
+						<mBgColor>#ffff00</mBgColor>
+						<mSoundFile></mSoundFile>
+						<colorTriggerFgColor>#000000</colorTriggerFgColor>
+						<colorTriggerBgColor>#000000</colorTriggerBgColor>
+						<regexCodeList>
+							<string>You will learn nothing from completing this quest again.</string>
+							<string>^You may only perform this quest \d+ times?.</string>
+						</regexCodeList>
+						<regexCodePropertyList>
+							<integer>0</integer>
+							<integer>1</integer>
+						</regexCodePropertyList>
+					</Trigger>
+				</TriggerGroup>
 			</TriggerGroup>
 			<TriggerGroup isActive="yes" isFolder="yes" isTempTrigger="no" isMultiline="no" isPerlSlashGOption="no" isColorizerTrigger="no" isFilterTrigger="no" isSoundTrigger="no" isColorTrigger="no" isColorTriggerFg="no" isColorTriggerBg="no">
 				<name>Inventory</name>
@@ -382,8 +363,12 @@ end</script>
     local questIdTable = checkIfQuestObjective(x1)
     cecho("&lt;magenta&gt; Quest!")
     for k,v in spairs(questIdTable) do
+      local exists1
+      local path1
+      exists1, path1 = getPath(gmcp.Room.Info.num,morqui.questTable[v].questRoomId)
       cechoLink(" &lt;white&gt;#"..v.." &lt;green&gt;", [[send("moveto ]]..v..[[")]], "Move to quest "..v, true)
-      cecho("&lt;white&gt;(&lt;LightSkyBlue&gt;"..countQuestItems(x1).."&lt;white&gt;)")   
+      cecho("&lt;white&gt;(&lt;LightSkyBlue&gt;"..countQuestItems(x1).."&lt;white&gt;)")
+      cecho(" &lt;grey&gt;Path&lt;white&gt;: &lt;green&gt;"..path1)
     end
   end
   
@@ -402,8 +387,12 @@ end</script>
     local questIdTable = checkIfQuestObjective(x2)
     cecho("&lt;magenta&gt; Quest!")
     for k,v in spairs(questIdTable) do
+      local exists2
+      local path2
+      exists2, path2 = getPath(gmcp.Room.Info.num,morqui.questTable[v].questRoomId)
       cechoLink(" &lt;white&gt;#"..v.." &lt;green&gt;", [[send("moveto ]]..v..[[")]], "Move to quest "..v, true)
-      cecho("&lt;white&gt;(&lt;LightSkyBlue&gt;"..countQuestItems(x2).."&lt;white&gt;)")   
+      cecho("&lt;white&gt;(&lt;LightSkyBlue&gt;"..countQuestItems(x2).."&lt;white&gt;)")
+      cecho(" &lt;grey&gt;Path&lt;white&gt;: &lt;green&gt;"..path2)
     end
   end
   
@@ -445,8 +434,12 @@ end</script>
     local questIdTable = checkIfQuestObjective(x1)
     cecho("&lt;magenta&gt; Quest!")
     for k,v in spairs(questIdTable) do
+      local exists1
+      local path1
+      exists1, path1 = getPath(gmcp.Room.Info.num,morqui.questTable[v].questRoomId)
       cechoLink(" &lt;white&gt;#"..v.." &lt;green&gt;", [[send("moveto ]]..v..[[")]], "Move to quest "..v, true)
-      cecho("&lt;white&gt;(&lt;LightSkyBlue&gt;"..countQuestItems(x1).."&lt;white&gt;)")   
+      cecho("&lt;white&gt;(&lt;LightSkyBlue&gt;"..countQuestItems(x1).."&lt;white&gt;)")
+      cecho(" &lt;grey&gt;Path&lt;white&gt;: &lt;green&gt;"..path1)
     end
   end
 
@@ -463,8 +456,10 @@ end</script>
 						<colorTriggerBgColor>#000000</colorTriggerBgColor>
 						<regexCodeList>
 							<string>^\[\s?(\d+)\]\s(.{38})$</string>
+							<string>^\[\s?(\d+)\]\s(.{26})$</string>
 						</regexCodeList>
 						<regexCodePropertyList>
+							<integer>1</integer>
 							<integer>1</integer>
 						</regexCodePropertyList>
 					</Trigger>
